@@ -9,7 +9,7 @@ function Signup() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleSignup = (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
@@ -17,63 +17,79 @@ function Signup() {
       return;
     }
 
-    // Placeholder for backend call
-    alert(`Signup: ${username} / ${email} / ${password}`);
-    // TODO: Call POST /signup on Flask
+    try {
+      const response = await fetch("http://127.0.0.1:5000/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username,
+          email,
+          password
+        })
+      });
 
-    // After signup, navigate to login or home
-    navigate("/login");
+      if (!response.ok) throw new Error("Signup failed");
+
+      const data = await response.json();
+
+      if (data.id || data.user) {
+        const user = data.user || data;
+        localStorage.setItem("user", JSON.stringify(user));
+      }
+
+      alert("Signup successful!");
+      navigate("/login");
+
+    } catch (err) {
+      console.error(err);
+      alert("Signup failed. Try again.");
+    }
   };
 
   return (
-    <div style={{ maxWidth: "400px", margin: "2rem auto" }}>
+    <div className="container">
       <h2>Signup</h2>
+
       <form onSubmit={handleSignup}>
-        <div style={{ marginBottom: "1rem" }}>
-          <label>Username:</label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            style={{ width: "100%", padding: "0.5rem" }}
-          />
-        </div>
+        <input
+          className="input"
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+        />
 
-        <div style={{ marginBottom: "1rem" }}>
-          <label>Email:</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={{ width: "100%", padding: "0.5rem" }}
-          />
-        </div>
+        <input
+          className="input"
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
 
-        <div style={{ marginBottom: "1rem" }}>
-          <label>Password:</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{ width: "100%", padding: "0.5rem" }}
-          />
-        </div>
+        <input
+          className="input"
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
 
-        <div style={{ marginBottom: "1rem" }}>
-          <label>Confirm Password:</label>
-          <input
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            style={{ width: "100%", padding: "0.5rem" }}
-          />
-        </div>
+        <input
+          className="input"
+          type="password"
+          placeholder="Confirm Password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          required
+        />
 
-        <button type="submit" style={{ padding: "0.5rem 1rem" }}>
+        <button className="button" type="submit">
           Signup
         </button>
       </form>

@@ -7,46 +7,65 @@ function Login() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    // 🔹 Placeholder for backend call
-    alert(`Login with: ${email} / ${password}`);
-    // TODO: Call POST /login on Flask
+    try {
+      const response = await fetch("http://127.0.0.1:5000/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+      });
 
-    // After successful login, navigate to home or create scenario
-    navigate("/");
+      if (!response.ok) throw new Error("Login failed");
+
+      const data = await response.json();
+
+      localStorage.setItem("user", JSON.stringify(data));
+
+      alert("Login successful!");
+      navigate("/");
+
+    } catch (err) {
+      console.error(err);
+      alert("Invalid login credentials");
+    }
   };
 
   return (
-    <div style={{ maxWidth: "400px", margin: "2rem auto" }}>
+    <div className="container">
       <h2>Login</h2>
+
       <form onSubmit={handleLogin}>
-        <div style={{ marginBottom: "1rem" }}>
-          <label>Email:</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={{ width: "100%", padding: "0.5rem" }}
-          />
-        </div>
+        <input
+          className="input"
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
 
-        <div style={{ marginBottom: "1rem" }}>
-          <label>Password:</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{ width: "100%", padding: "0.5rem" }}
-          />
-        </div>
+        <input
+          className="input"
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
 
-        <button type="submit" style={{ padding: "0.5rem 1rem" }}>
+        <button className="button" type="submit">
           Login
         </button>
+        <p>
+          Don’t have an account?{" "}
+          <a href="/signup" className="link">
+            Sign up
+          </a>
+        </p>
       </form>
     </div>
   );

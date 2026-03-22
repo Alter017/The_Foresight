@@ -1,3 +1,5 @@
+import "./Results.css";
+
 import { useLocation } from "react-router-dom";
 import { useState } from "react";
 
@@ -5,11 +7,10 @@ function Results() {
   const { state } = useLocation();
 
   if (!state) {
-    return <h2>No data found</h2>;
+    return <h2 className="container">No data found</h2>;
   }
 
   const scenario = state;
-
   const [customDecision, setCustomDecision] = useState("");
 
   const handleDecision = async (choice) => {
@@ -26,7 +27,6 @@ function Results() {
 
       if (!response.ok) throw new Error("Failed to save decision");
 
-      // Update frontend state/localStorage
       const updated = scenarios.map((s) =>
         s.id === scenario.id ? updatedScenario : s
       );
@@ -40,12 +40,12 @@ function Results() {
   };
 
   return (
-    <div>
+    <div className="container">
       <h2>{scenario.title}</h2>
       <p>{scenario.description}</p>
 
       {scenario.results.map((opt, index) => (
-        <div key={index}>
+        <div key={index} className="result-card">
           <h3>{opt.name}</h3>
 
           <h4>Short-Term Pros</h4>
@@ -68,23 +68,28 @@ function Results() {
             {opt.longCons.map((c, i) => <li key={i}>{c}</li>)}
           </ul>
 
-          {/* ✅ Choose existing option */}
-          <button onClick={() => handleDecision(opt.name)}>
+          <button
+            className="button"
+            onClick={() => handleDecision(opt.name)}
+          >
             Choose this option
           </button>
         </div>
       ))}
 
-      {/* ✅ Custom decision */}
       <h3>Or enter your own decision:</h3>
 
       <input
+        className="input"
         value={customDecision}
         onChange={(e) => setCustomDecision(e.target.value)}
         placeholder="Custom decision"
       />
 
-      <button onClick={() => handleDecision(customDecision)}>
+      <button
+        className="button"
+        onClick={() => handleDecision(customDecision)}
+      >
         Save Custom Decision
       </button>
     </div>
