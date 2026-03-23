@@ -18,7 +18,7 @@ function Signup() {
     }
 
     try {
-      const response = await fetch("http://127.0.0.1:5000/signup", {
+      const response = await fetch("http://127.0.0.1:5000/auth/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -26,17 +26,16 @@ function Signup() {
         body: JSON.stringify({
           username,
           email,
-          password
+          password,
+          confirmPassword
         })
       });
 
-      if (!response.ok) throw new Error("Signup failed");
-
       const data = await response.json();
 
-      if (data.id || data.user) {
-        const user = data.user || data;
-        localStorage.setItem("user", JSON.stringify(user));
+      if (!response.ok) {
+        alert(data.error || "Signup failed");
+        return;
       }
 
       alert("Signup successful!");
@@ -44,7 +43,8 @@ function Signup() {
 
     } catch (err) {
       console.error(err);
-      alert("Signup failed. Try again.");
+      const data = await response.json();
+      alert(data.error);
     }
   };
 
