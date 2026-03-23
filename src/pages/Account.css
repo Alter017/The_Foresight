@@ -1,0 +1,79 @@
+.profile-container {
+  display: flex;
+  gap: 40px;
+  padding: 40px;
+  min-height: 100vh;
+  background-color: #f5f7fb;
+  font-family: Arial, sans-serif;
+}
+
+.profile-left {
+  flex: 1;
+  background: white;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.profile-left h1 {
+  margin-bottom: 20px;
+}
+
+.profile-left p {
+  margin: 10px 0;
+  font-size: 16px;
+}
+
+.profile-right {
+  flex: 1;
+  background: white;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.profile-right h3 {
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.profile-right input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.profile-right button,
+.profile-left button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  background-color: #4a6cf7;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+.profile-right button:hover,
+.profile-left button:hover {
+  background-color: #3a56d4;
+}
+
+.profile-left button {
+  background-color: #e74c3c;
+}
+
+.profile-left button:hover {
+  background-color: #c0392b;
+}
+
+@media (max-width: 768px) {
+  .profile-container {
+    flex-direction: column;
+    padding: 20px;
+  }
+}
