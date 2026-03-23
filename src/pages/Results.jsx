@@ -1,40 +1,55 @@
-import "./Results.css";
-
 import { useLocation } from "react-router-dom";
 import { useState } from "react";
 
 function Results() {
   const { state } = useLocation();
 
-  if (!state) {
-    return <h2 className="container">No data found</h2>;
-  }
+  const scenario =
+    state ||
+    JSON.parse(localStorage.getItem("scenarios"))?.slice(-1)[0];
 
-  const scenario = state;
   const [customDecision, setCustomDecision] = useState("");
 
   const handleDecision = async (choice) => {
-    const scenarios = JSON.parse(localStorage.getItem("scenarios")) || [];
+    if (!choice) {
+      alert("Please enter a decision");
+      return;
+    }
 
-    const updatedScenario = { ...scenario, finalDecision: choice };
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    if (!user) {
+      alert("You must be logged in to save a decision");
+      return;
+    }
 
     try {
-      const response = await fetch("http://127.0.0.1:5000/scenario/save", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedScenario),
-      });
-
-      if (!response.ok) throw new Error("Failed to save decision");
-
-      const updated = scenarios.map((s) =>
-        s.id === scenario.id ? updatedScenario : s
+      const res = await fetch(
+        `http://localhost:5000/scenario/${scenario.id}/final-decision`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: user.id,           
+            final_decision_text: choice      
+          }),
+        }
       );
-      localStorage.setItem("scenarios", JSON.stringify(updated));
+      
 
-      alert(`Final decision saved: ${choice}`);
+      if (!res.ok) {
+        const err = await res.json();
+        console.error("BACKEND ERROR:", err);
+        console.log("SCENARIO ID:", scenario.id);
+        throw new Error("Failed to save decision");
+      }
+
+      console.log("SCENARIO ID:", scenario.id);
+      alert(`Decision saved: ${choice}`);
+
     } catch (err) {
       console.error(err);
+      console.log("SCENARIO ID:", scenario.id);
       alert("Failed to save decision");
     }
   };
