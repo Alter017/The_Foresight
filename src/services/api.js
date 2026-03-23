@@ -1,11 +1,16 @@
-export const generateProsCons = async (scenario) => {
-  const res = await fetch("http://127.0.0.1:5000/analyze", {
+export const generateProsCons = async (data) => {
+  const response = await fetch("http://localhost:5000/analyze", {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
+      "Content-Type": "application/json"
     },
-    body: JSON.stringify(scenario),
+    body: JSON.stringify(data)
   });
 
-  return res.json();
+  if (!response.ok) {
+    throw new Error("Failed to analyze scenario");
+  }
+
+  const results = await response.json();
+  return results;
 };
