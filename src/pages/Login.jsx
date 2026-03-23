@@ -11,7 +11,7 @@ function Login() {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://127.0.0.1:5000/login", {
+      const response = await fetch("http://127.0.0.1:5000/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -23,14 +23,15 @@ function Login() {
 
       const data = await response.json();
 
-      localStorage.setItem("user", JSON.stringify(data));
+      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("loggedIn", "true");
 
       alert("Login successful!");
-      navigate("/");
+      navigate("/dashboard");
 
     } catch (err) {
       console.error(err);
-      alert("Invalid login credentials");
+      alert("Login failed");
     }
   };
 
