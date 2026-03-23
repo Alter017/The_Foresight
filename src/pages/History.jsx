@@ -4,10 +4,13 @@ import { useEffect, useState } from "react";
 function History() {
   const navigate = useNavigate();
   const [scenarios, setScenarios] = useState([]);
+  const [isCheckingLogin, setIsCheckingLogin] = useState(true);
 
   useEffect(() => {
     if (!localStorage.getItem("loggedIn")) {
       navigate("/login");
+    } else {
+      setIsCheckingLogin(false);
     }
   }, [navigate]);
 
@@ -36,8 +39,14 @@ function History() {
       }
     };
 
-    fetchHistory();
-  }, []);
+    if (!isCheckingLogin) {
+      fetchHistory();
+    }
+  }, [isCheckingLogin]);
+
+  if (isCheckingLogin) {
+    return null; // or a loading spinner
+  }
 
   return (
     <div className="container" style={{ maxHeight: "80vh", overflowY: "auto" }}>
@@ -56,7 +65,7 @@ function History() {
 
             <p><strong>Options:</strong></p>
             <ul>
-              {s.options.map((opt, i) => (
+              {(s.options || []).map((opt, i) => (
                 <li key={i}>{opt}</li>
               ))}
             </ul>
@@ -68,26 +77,26 @@ function History() {
 
             {(s.pros_cons || []).map((opt, index) => (
               <div key={index} style={{ marginTop: "10px" }}>
-                <h4>{opt.name}</h4>
+                <h4>{opt.name || "Option"}</h4>
 
                 <strong>Short Pros:</strong>
                 <ul>
-                  {opt.shortPros.map((p, i) => <li key={i}>{p}</li>)}
+                  {(opt.shortPros || []).map((p, i) => <li key={i}>{p}</li>)}
                 </ul>
 
                 <strong>Short Cons:</strong>
                 <ul>
-                  {opt.shortCons.map((c, i) => <li key={i}>{c}</li>)}
+                  {(opt.shortCons || []).map((c, i) => <li key={i}>{c}</li>)}
                 </ul>
 
                 <strong>Long Pros:</strong>
                 <ul>
-                  {opt.longPros.map((p, i) => <li key={i}>{p}</li>)}
+                  {(opt.longPros || []).map((p, i) => <li key={i}>{p}</li>)}
                 </ul>
 
                 <strong>Long Cons:</strong>
                 <ul>
-                  {opt.longCons.map((c, i) => <li key={i}>{c}</li>)}
+                  {(opt.longCons || []).map((c, i) => <li key={i}>{c}</li>)}
                 </ul>
               </div>
             ))}
