@@ -1,0 +1,18 @@
+CREATE TABLE scenarios (
+id INT AUTO_INCREMENT PRIMARY KEY,
+user_id INT NOT NULL,
+title VARCHAR(255) NOT NULL,
+scenario_text TEXT NOT NULL,
+options_json JSON NOT NULL,
+pros_cons_json JSON,
+final_decision_text TEXT,
+reflection_note TEXT,
+created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP);
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    username VARCHAR(255) UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL
+);
