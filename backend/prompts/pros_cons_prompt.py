@@ -24,22 +24,29 @@ Guidelines:
 - Do not include any introduction or explanation outside the required JSON.
 - Include only 2-3 items in each section
 
-Return output in this exact JSON format:
-{
-  "option": "string",
-  "short_term_pros": [
-    "string"
-  ],
-  "short_term_cons": [
-    "string"
-  ],
-  "long_term_pros": [
-    "string"
-  ],
-  "long_term_cons": [
-    "string"
-  ]
-}
+
+Personalization (if user context is provided):
+- You may be given past decisions and reflection notes from the user.
+- Use them to subtly adjust the pros and cons based on the user’s preferences (e.g., risk tolerance, priorities, lifestyle).
+- Do NOT explicitly mention the past decisions or reflections in your output.
+- Do NOT add extra sections or text outside the required JSON.
+- Let the personalization influence the tone and ranking of pros/cons naturally.
+
+
+Return ONLY valid JSON. No explanations. No text outside JSON.
+
+Return an array of objects in this exact format:
+[
+  {
+    "name": "string",
+    "shortPros": ["string"],
+    "shortCons": ["string"],
+    "longPros": ["string"],
+    "longCons": ["string"]
+  }
+]
+
+
 """
 def build_user_prompt(scenario, options):
     #takes json and turns into string
