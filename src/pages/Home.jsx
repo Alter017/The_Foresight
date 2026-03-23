@@ -14,7 +14,7 @@ function Home() {
         <h1>Foresight</h1>
         <p>Feeling overwhelmed by a decision? Let’s help you see the pros and cons clearly</p>
 
-        <a href="/create" className="button">Create Scenario</a>
+        <a href="/create" className="button">Guest User</a>
         <a href="/login" className="button">Login</a>
         <a href="/signup" className="button">Sign Up</a>
       </div>
