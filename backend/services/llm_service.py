@@ -8,25 +8,45 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY")) #making openai client
 def generate_pros_cons(scenario, options):
     user_prompt = build_user_prompt(scenario, options)
 
-    response = client.chat.completions.create(
-        model="gpt-5.4",
-        messages=[
-            {"role": "system", "content":PC_PROMPT},
-            {"role": "user", "content": user_prompt}
-        ],
-        temperature=0.7 #how varaible we want the response to be. 0.2-0.5 is strict, less varied more predictable. 
-    )
+    print("Calling OpenAI...")
+    
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4.1-mini",
+            messages=[
+                {"role": "system", "content": PC_PROMPT},
+                {"role": "user", "content": user_prompt}
+            ],
+        )
+    except Exception as e:
+        print("OpenAI error:", e)
+        return {"error": "LLM failed"}
+
+    print("OpenAI responded")
 
     content = response.choices[0].message.content
 
     try:
-        #convert json string to python dict
-        parsed_content = json.loads(content)
-        return parsed_content
-    except json.JSONDecodeError:
-        return {
-            "error": "Invalid JSON returned by model",
-            "raw_output": content
-        }
+        content = content.strip()
 
-    
+        start = content.find("[")
+        end = content.rfind("]") + 1
+
+        parsed_content = json.loads(content[start:end])
+        formatted = []
+        for item in parsed_content:
+            formatted.append({
+                "name": item.get("name") or item.get("option"),
+                "shortPros": item.get("shortPros", []),
+                "shortCons": item.get("shortCons", []),
+                "longPros": item.get("longPros", []),
+                "longCons": item.get("longCons", [])
+            })
+
+        return formatted
+        
+    except json.JSONDecodeError:
+        print("Bad JSON:", content)
+        return []
+
+        
