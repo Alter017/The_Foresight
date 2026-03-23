@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { generateProsCons } from "../services/api";
 
 function CreateScenario() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [options, setOptions] = useState(["", ""]);
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -18,49 +20,150 @@ function CreateScenario() {
     setOptions([...options, ""]);
   };
 
+// const handleSubmit = async () => {
+//   console.log("Submit clicked");
+//   if (!title || !description || options.some(opt => !opt.trim())) {
+//     alert("Please fill all required fields");
+//     return;
+//   }
+
+//   const cleanOptions = options.filter(opt => opt.trim() !== "");
+
+//   setLoading(true);
+
+// try {
+//   const results = await generateProsCons({
+//     title,
+//     description,
+//     options: cleanOptions
+//   });
+
+//   if (!Array.isArray(results)) {
+//     console.error("Bad response:", results);
+//     alert("AI failed. Try again.");
+//     setLoading(false);
+//     return;
+//   }
+
+//   console.log("API results:", results);
+
+//   const newScenario = {
+//     id: realId,
+//     title,
+//     description,
+//     options: cleanOptions,
+//     results,
+//     finalDecision: null,
+//     reflection: ""
+//   };
+
+//   const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+
+//   let realId = null;
+
+//   if (storedUser) {
+//     const saveRes = await fetch("http://localhost:5000/scenario/save", {
+//       method: "POST",
+//       headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify({
+//         user_id: storedUser.id, 
+//         title,
+//         scenario_text: description, 
+//         options: cleanOptions,
+//         pros_cons: results  
+//       })
+//     });
+
+//     console.log("SAVE STATUS:", saveRes.status);
+
+//     realId = saveData.scenario_id;
+//     console.log("SAVE RESPONSE:", saveData);
+
+//     if (!saveRes.ok) {
+//       throw new Error("Failed to save scenario");
+//     }
+//   } else {
+//     console.log("Guest user → not saving");
+//   }
+
+//   setLoading(false);
+//   navigate("/results", { state: newScenario });
+
+// } catch (err) {
+//   console.error(err);
+//   setLoading(false);
+//   alert("Error analyzing scenario. Try again.");
+// }};
+
   const handleSubmit = async () => {
-    if (!title || !description || options.some(opt => !opt)) {
+    console.log("Submit clicked");
+
+    if (!title || !description || options.some(opt => !opt.trim())) {
       alert("Please fill all required fields");
       return;
     }
 
+    const cleanOptions = options.filter(opt => opt.trim() !== "");
+    setLoading(true);
+    
+    const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+
     try {
-      const response = await fetch("http://127.0.0.1:5000/analyze", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          title,
-          description,
-          options
-        })
-      });
-
-      if (!response.ok) throw new Error("Failed to analyze scenario");
-
-      const results = await response.json();
-
-      const newScenario = {
-        id: Date.now(),
+      const results = await generateProsCons({
         title,
         description,
-        options,
+        options: cleanOptions,
+        user_id: storedUser?.id || null
+      });
+
+      if (!Array.isArray(results)) {
+        alert("AI failed. Try again.");
+        setLoading(false);
+        return;
+      }
+
+      let realId = null;
+
+      if (storedUser) {
+        const saveRes = await fetch("http://localhost:5000/scenario/save", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: storedUser.id,
+            title,
+            scenario_text: description,
+            options: cleanOptions,
+            pros_cons: results
+          })
+        });
+
+        const saveData = await saveRes.json();
+
+        console.log("SAVE RESPONSE:", saveData);
+
+        if (!saveRes.ok) {
+          throw new Error("Failed to save scenario");
+        }
+
+        realId = saveData.scenario_id;
+      }
+
+      const newScenario = {
+        id: realId, 
+        title,
+        description,
+        options: cleanOptions,
         results,
         finalDecision: null,
         reflection: ""
       };
 
-      const existing = JSON.parse(localStorage.getItem("scenarios")) || [];
-      localStorage.setItem(
-        "scenarios",
-        JSON.stringify([...existing, newScenario])
-      );
-
+      setLoading(false);
       navigate("/results", { state: newScenario });
 
     } catch (err) {
       console.error(err);
+      setLoading(false);
       alert("Error analyzing scenario. Try again.");
     }
   };
@@ -99,9 +202,14 @@ function CreateScenario() {
         + Add Option
       </button>
 
-      <button className="button" onClick={handleSubmit}>
-        Generate Pros & Cons
+      <button
+        className="button"
+        onClick={handleSubmit}
+        disabled={loading}
+      >
+        {loading ? "Analyzing..." : "Analyze"}
       </button>
+      
     </div>
   );
 }
