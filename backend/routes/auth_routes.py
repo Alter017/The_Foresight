@@ -1,12 +1,14 @@
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify
 import bcrypt
 from services.db import get_db_connection
-from services.auth_utils import require_login
 
 auth_bp = Blueprint("auth", __name__)
 
-@auth_bp.route("/signup", methods=["POST"])
+@auth_bp.route("/signup", methods=["POST", "OPTIONS"])
 def signup():
+    if request.method == "OPTIONS":
+        return '', 200
+
     try:
         data = request.get_json()
 
@@ -55,8 +57,10 @@ def signup():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-@auth_bp.route("/login", methods=["POST"])
+@auth_bp.route("/login", methods=["POST", "OPTIONS"])
 def login():
+    if request.method == "OPTIONS":
+        return '', 200
     try:
         data = request.get_json()
 
@@ -84,11 +88,6 @@ def login():
         
         #bcrypt.checkpw takes 2 inputs first = teh pass the user typed. the 2nd = hashed stored pass in db; it returns true if they match and false otherwise 
         #password.encode("utf-8") = takes passwords and encodes it 
-        
-        #when login succeeds flask remembers that user
-        session["user_id"] = user["id"]
-        session["username"] = user["username"]
-
 
         return jsonify({
             "message": "Login successful",
@@ -104,27 +103,14 @@ def login():
     
 @auth_bp.route("/logout", methods=["POST"])
 def logout():
-    session.clear()
     return jsonify({"message": "Logout successful"}), 200
-
-@auth_bp.route("/me", methods=["GET"])
-def get_current_user():
-    if "user_id" not in session:
-        return jsonify({"error": "Not authenticated"}), 401
-
-    return jsonify({
-        "user_id": session["user_id"],
-        "username": session.get("username")
-    }), 200
 
 @auth_bp.route("/account/username", methods=["PUT"])
 def update_username():
-    auth_error = require_login()
-    if auth_error:
-        return auth_error
 
     try:
         data = request.get_json()
+        user_id = data.get("userId")
         new_username = data.get("username")
 
         if not new_username:
@@ -135,31 +121,20 @@ def update_username():
 
         # Check if username is already taken by someone else
         cursor.execute(
-            """
-            SELECT id FROM users
-            WHERE username = %s AND id != %s
-            """,
-            (new_username, session["user_id"])
+            "SELECT id FROM users WHERE username = %s AND id != %s",
+            (new_username, user_id)
         )
-        existing_user = cursor.fetchone()
 
-        if existing_user:
+        if cursor.fetchone():
             cursor.close()
             conn.close()
             return jsonify({"error": "Username already exists"}), 409
 
         cursor.execute(
-            """
-            UPDATE users
-            SET username = %s
-            WHERE id = %s
-            """,
-            (new_username, session["user_id"])
+            "UPDATE users SET username = %s WHERE id = %s",
+            (new_username, user_id)
         )
         conn.commit()
-
-        # keep session username updated too
-        session["username"] = new_username
 
         cursor.close()
         conn.close()
@@ -171,12 +146,10 @@ def update_username():
     
 @auth_bp.route("/account/password", methods=["PUT"])
 def update_password():
-    auth_error = require_login()
-    if auth_error:
-        return auth_error
 
     try:
         data = request.get_json()
+        user_id = data.get("userId")
         current_password = data.get("currentPassword")
         new_password = data.get("newPassword")
         confirm_new_password = data.get("confirmNewPassword")
@@ -194,7 +167,7 @@ def update_password():
 
         cursor.execute(
             "SELECT password_hash FROM users WHERE id = %s",
-            (session["user_id"],)
+            (user_id,)
         )
         user = cursor.fetchone()
 
@@ -224,7 +197,7 @@ def update_password():
             SET password_hash = %s
             WHERE id = %s
             """,
-            (new_password_hash, session["user_id"])
+            (new_password_hash, user_id)
         )
         conn.commit()
 
