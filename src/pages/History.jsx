@@ -45,7 +45,7 @@ function History() {
   }, [isCheckingLogin]);
 
   if (isCheckingLogin) {
-    return null; // or a loading spinner
+    return null;
   }
 
   return (
